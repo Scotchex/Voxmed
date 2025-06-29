@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+    // Fade out on navigation
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.classList.remove("fade-out");
+        const links = document.querySelectorAll('a, button[type="submit"]');
+        links.forEach(link => {
+            link.addEventListener('click', e => {
+                // Prevent default only for internal links/buttons
+                if (link.href && link.href.startsWith(window.location.origin)) {
+                    e.preventDefault();
+                    document.body.classList.add("fade-out");
+                    setTimeout(() => {
+                        window.location = link.href;
+                    }, 500);
+                }
+            });
+        });
+    });
+    </script>   
+  <meta charset="UTF-8">
+  <title>Voxmed | Your AI Health Partner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body class="fade-out">
+  <div class="overlay"></div>
+  <div class="container">
+    <h1 class="title">🩺 Voxmed</h1>
+    <p class="subtitle">Your AI-powered medical companion.</p>
+    <div class="buttons">
+      <a href="/signup" class="btn">Sign Up</a>
+      <a href="/login" class="btn secondary">Log In</a>
+    </div>
+  </div>
+</body>
+</html>

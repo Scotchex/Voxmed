@@ -1,0 +1,194 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0d1117;
+    color: #c9d1d9;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#callButton {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #1f6feb, #3b82f6);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(31, 111, 235, 0.5);
+    transition: all 0.3s ease-in-out;
+    display: block;
+    margin: 20px auto;
+    backdrop-filter: blur(10px);
+    animation: floatIn 0.5s ease;
+}
+
+#callButton:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 6px 25px rgba(31, 111, 235, 0.6);
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+@keyframes floatIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#ringBox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #161b22, #0d1117);
+    display: none;
+    z-index: 9999;
+}
+
+.ring-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.call-status {
+    font-size: 1rem;
+    color: #8b949e;
+    text-align: center;
+    white-space: pre-line;
+}
+
+#endCallBtn {
+    padding: 12px 30px;
+    font-size: 1rem;
+    background: #ff5555;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 85, 85, 0.3);
+    transition: all 0.3s ease;
+    margin: 20px auto;
+    display: none;
+    position: relative;
+    z-index: 10001;
+    pointer-events: auto;
+}
+
+#endCallBtn:hover {
+    background: #ff2222;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 85, 85, 0.5);
+}
+
+.wave {
+    position: absolute;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: waveAnim 2s infinite;
+}
+
+@keyframes waveAnim {
+    0% {
+        width: 0px;
+        height: 0px;
+        opacity: 0.8;
+    }
+    100% {
+        width: 400px;
+        height: 400px;
+        opacity: 0;
+    }
+}
+
+.loader {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    animation: slideIn 0.5s ease-out;
+}
+
+.notification.success {
+    background: #4CAF50;
+    color: white;
+}
+
+.notification.error {
+    background: #f44336;
+    color: white;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+@media (max-width: 480px) {
+    #callButton {
+        font-size: 1rem;
+        padding: 12px 24px;
+    }
+    #endCallBtn {
+        font-size: 0.9rem;
+        padding: 10px 24px;
+    }
+}
+
+.app-header {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 2.2rem;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+    z-index: 10000;
+    pointer-events: none;
+}
+
+@keyframes fadeInHeader {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.app-header {
+    animation: fadeInHeader 1s ease-out;
+}
+
+/* Fade transition styles */
+body {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+body.fade-out {
+    opacity: 0;
+}

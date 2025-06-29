@@ -1,0 +1,153 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Background Animation */
+body::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(-45deg, #1f6feb, #3b82f6, #0d1117, #161b22);
+  background-size: 400% 400%;
+  animation: gradientMove 15s ease infinite;
+  z-index: -2;
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(13, 17, 23, 0.7);
+  z-index: -1;
+}
+
+/* Container Styling */
+.container {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.title {
+  font-size: 3.5rem;
+  color: #ffffff;
+  margin-bottom: 10px;
+  animation: fadeIn 1s ease-out;
+}
+
+.subtitle {
+  font-size: 1.3rem;
+  color: #8b949e;
+  margin-bottom: 40px;
+  animation: fadeIn 1.5s ease-out;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  animation: fadeIn 2s ease-out;
+}
+
+.btn {
+  padding: 15px 35px;
+  font-size: 1.1rem;
+  text-decoration: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #1f6feb, #3b82f6);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(31, 111, 235, 0.5);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn:hover {
+  transform: scale(1.07);
+  box-shadow: 0 6px 30px rgba(31, 111, 235, 0.7);
+}
+
+.btn.secondary {
+  background: transparent;
+  border: 2px solid #3b82f6;
+  color: #3b82f6;
+}
+
+.btn.secondary:hover {
+  background: #3b82f6;
+  color: white;
+}
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0d1117;
+  color: #c9d1d9;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated fade-in blue overlay */
+body::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent, #3b82f6);
+  opacity: 0;
+  animation: fadeInBlue 15s ease-in-out forwards;
+  z-index: -1;
+}
+
+/* Smooth gradient fade */
+@keyframes fadeInBlue {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .title {
+    font-size: 2.4rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .btn {
+    font-size: 1rem;
+    padding: 12px 25px;
+  }
+}
