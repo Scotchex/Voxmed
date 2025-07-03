@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from bson.objectid import ObjectId
 from datetime import datetime
 import os
+from pymongo.results import UpdateResult
 
 load_dotenv()
 uri = os.getenv('MONGODB_URI')
@@ -152,3 +153,12 @@ def get_recent_sessions_for_doctor(doctor_id, limit=5):
         }
         for s in sessions
     ]
+
+def remove_doctor(user_id, doctor_id) -> UpdateResult:
+    result = user_collection.update_one(
+        {'_id' : ObjectId(user_id), 
+         'role' : 'patient', 
+         'doctor' : doctor_id},
+         {'$unset' : {'doctor' : ""}}
+    )
+    return result

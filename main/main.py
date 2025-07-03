@@ -98,7 +98,7 @@ def add_patient():
         notes = request.form.get('notes')
         patient = get_user_by_email(email)
         doc_id = session['user_id']
-        if patient and patient['role'] == 'patient' and patient['doctor'] != doc_id:
+        if patient and patient['role'] == 'patient' and patient.get('doctor') != doc_id:
             add_doctor(patient['_id'], doctor_id=doc_id)
             add_request(patient['_id'], str(doc_request))
             add_notes(patient['_id'], str(notes))
@@ -112,6 +112,29 @@ def add_patient():
             flash('Patient does not exist!')
             return redirect('/add_patient')
     return render_template('add_patient.html')
+
+@app.route('/my_patients', methods=['GET', 'POST'])
+def my_patients():
+    doc_id = session['user_id']
+    return render_template('my_patients.html', patients=get_doctors_patients(doc_id))
+
+@app.route('/remove_patient', methods=['POST'])
+def remove_patient():
+    doc_id = session['user_id']
+    if 'user_id' not in session or session['role'] != 'doctor':
+        return redirect('/login')
+    patient_id = request.form.get('patient_id')
+    if not patient_id:
+        return 'Missing patient ID', 400
+    
+    result = remove_doctor(patient_id, doc_id)
+    
+    if result.modified_count == 1:
+        flash('Patient removed!')
+        return redirect('/my_patients')
+    else:
+        flash('Patient could not be removed due to unauthorization errors!')
+        return redirect('/my_patients')
 
 @app.route('/logout', methods=['POST'])
 def logout():
