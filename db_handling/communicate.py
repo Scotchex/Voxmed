@@ -46,13 +46,14 @@ def get_user_by_id(user_id):
 
 
 #sessions functions#
-def save_session(patient_id, doctor_id, transcript, possible_diagnosis=None):
+def save_session(patient_id, doctor_id, transcript, possible_diagnosis=None, status='open'):
     session_data = {
         'patient_id' : ObjectId(patient_id),
         'doctor_id' : ObjectId(doctor_id),
         'transcript' : transcript,
         'diagnosis' : possible_diagnosis,
-        'timestamp' : datetime.now()
+        'timestamp' : datetime.now(),
+        'status' : status
     }
 
     result = sessions_collection.insert_one(session_data)
@@ -61,6 +62,24 @@ def save_session(patient_id, doctor_id, transcript, possible_diagnosis=None):
 def get_sessions_for_doctor(doctor_id):
     sessions = sessions_collection.find({'doctor_id' : ObjectId(doctor_id)})
     return [{**s, '_id' : str(s['_id'])} for s in sessions]
+
+from datetime import datetime, timedelta
+
+def get_sessions_this_week_for_doctor(doctor_id):
+    one_week_ago = datetime.now() - timedelta(days=7)
+    sessions = sessions_collection.find({
+        'doctor_id': ObjectId(doctor_id),
+        'timestamp': {'$gte': one_week_ago}
+    })
+
+    return [{**s, '_id': str(s['_id'])} for s in sessions]
+
+def count_open_cases_for_doctor(doctor_id):
+    return sessions_collection.count_documents({
+        'doctor_id': ObjectId(doctor_id),
+        'status': 'open'
+    })
+
 
 def get_sessions_for_user(user_id):
     sessions = sessions_collection.find({'user_id' : ObjectId(user_id)})
@@ -79,6 +98,23 @@ def get_all_patients():
         
     return patients
 
+def get_doctors_patients(doctor_id):
+    patients_cursor = user_collection.find({
+        'role' : 'patient',
+        'doctor' : ObjectId(doctor_id)
+    })
+    patients = []
+
+    for patient in patients_cursor:
+        patients.append({
+            '_id' : str(patient['_id']),
+            'name' : patient.get('name'),
+            'email' : patient.get('email'),
+            'request' : patient.get('request')
+
+        })
+
+    return patients
 def add_doctor(patient_id, doctor_id):
     result = user_collection.update_one(
         {'_id' : ObjectId(patient_id), 'role' : 'patient'},
@@ -93,3 +129,19 @@ def add_request(patient_id, request):
     )
     return result.modified_count > 0
 
+def get_recent_sessions_for_doctor(doctor_id, limit=5):
+    sessions = sessions_collection.find(
+        {'doctor_id': ObjectId(doctor_id)}
+    ).sort('timestamp', -1).limit(limit)
+
+    # Format and convert ObjectId
+    return [
+        {
+            '_id': str(s['_id']),
+            'patient_id': str(s['patient_id']),
+            'transcript': s.get('transcript', ''),
+            'diagnosis': s.get('diagnosis', 'N/A'),
+            'timestamp': s['timestamp'].strftime('%B %d, %Y'),
+        }
+        for s in sessions
+    ]

@@ -128,7 +128,7 @@
   </header>
   <div class="container">
     <div class="welcome">
-      Welcome, Dr. <strong><!-- doctor name here dynamically --></strong>
+      Welcome, Dr. <strong>{{ doctor_name }}</strong>
     </div>
 
     <div class="buttons">
@@ -139,29 +139,28 @@
     <div class="summary">
       <div class="summary-card">
         <h3>Total Patients</h3>
-        <p>12</p>
+        <p>{{ total_patients }}</p>
       </div>
       <div class="summary-card">
         <h3>Sessions This Week</h3>
-        <p>5</p>
+        <p>{{ sessions_this_week }}</p>
       </div>
       <div class="summary-card">
         <h3>Open Cases</h3>
-        <p>3</p>
+        <p>{{ open_cases }}</p>
       </div>
     </div>
 
     <div class="recent-sessions">
-      <h3>Recent Sessions</h3>
-      <div class="session-item">
-        <strong>John Doe</strong> - July 2, 2025<br />
-        Possible diagnosis: Hypertension
-      </div>
-      <div class="session-item">
-        <strong>Jane Smith</strong> - July 1, 2025<br />
-        Possible diagnosis: Inner ear infection
-      </div>
+        <h3>Recent Sessions</h3>
+        {% for session in recent_sessions %}
+        <div class="session-item">
+            <strong>{{ session.patient_id }}</strong>
+            Possible Diagnosis : {{ session.diagnosis}}
+        </div>
+        {% else %}
+            <p>No recent sessions found</p>
+        {% endfor %}
     </div>
-  </div>
 </body>
 </html>

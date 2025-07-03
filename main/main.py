@@ -45,7 +45,8 @@ def login():
         if user and check_password_hash(user['password'], str(password)):
             session['user_id'] = user['_id']
             session['role'] = user['role']
-            return redirect('/doctor_landing')
+            if session['role'] == 'doctor':
+                return redirect('/doctor_landing')
         else:
             return render_template('login.html', error = 'Invalid email or password')
 
@@ -57,13 +58,37 @@ def patient_landing():
 
 @app.route('/doctor_landing')
 def doctor_landing():
-    return render_template('doctor_landing.html')
+    user_id = session['user_id']
+    
+    user = get_user_by_id(user_id)
+    patients = get_doctors_patients(user_id)
+    recent_sessions = get_recent_sessions_for_doctor(user_id)
+    total_patients = len(patients)
+    weekly_sessions = len(get_sessions_this_week_for_doctor(user_id))
+    open_cases = count_open_cases_for_doctor(user_id)
+    
+    if user:
+        name = user['name']
+        return render_template('doctor_landing.html', 
+                               doctor_name = name, 
+                               total_patients = total_patients,
+                               sessions_this_week = weekly_sessions,
+                               open_cases = open_cases,
+                               recent_sessions = recent_sessions)
+    else:
+        return redirect('/login')
+
+
 @app.route('/session', methods=['GET'])
 def get_session_route():
     try:
        return get_session()
     except Exception as e:
         return jsonify({'Error' : str(e)}), 500
-    
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return redirect('/login')
 if __name__ == '__main__':
     app.run('0.0.0.0', 8080)
