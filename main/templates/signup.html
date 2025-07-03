@@ -102,7 +102,19 @@
       <label for="password">Password</label>
       <input type="password" id="password" name="password" required>
 
-      <button type="submit">Create Account</button>
+  <label>Role</label>
+    <div style="margin-bottom: 20px; display: flex; gap: 20px; align-items: center; color: #c9d1d9;">
+      <label style="display: flex; align-items: center; gap: 5px;">
+        <input type="radio" name="role" value="patient" required>
+        Patient
+      </label>
+      <label style="display: flex; align-items: center; gap: 5px;">
+        <input type="radio" name="role" value="doctor" required>
+        Doctor
+      </label>
+    </div>
+
+    <button type="submit">Create Account</button>
     </form>
   </div>
 </body>

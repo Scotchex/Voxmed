@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Dashboard - Voxmed</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #0d1117, #1f2937);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background-color: rgba(13, 17, 23, 0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #c9d1d9;
+    }
+
+    .logout-btn {
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .logout-btn:hover {
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+      transform: translateY(-1px);
+    }
+
+    .container {
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .welcome {
+      font-size: 1.25rem;
+      color: #c9d1d9;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 20px;
+    }
+
+    .dashboard-btn {
+      flex: 1;
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .dashboard-btn:hover {
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+      transform: scale(1.02);
+    }
+
+    .summary {
+      display: flex;
+      gap: 20px;
+    }
+
+    .summary-card {
+      flex: 1;
+      background-color: #21262d;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .summary-card h3 {
+      margin-top: 0;
+      color: #c9d1d9;
+    }
+
+    .recent-sessions {
+      background-color: #161b22;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .recent-sessions h3 {
+      margin-top: 0;
+      color: #c9d1d9;
+    }
+
+    .session-item {
+      margin-bottom: 12px;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Voxmed - Doctor Dashboard</h1>
+    <form action="/logout" method="POST">
+      <button class="logout-btn">Logout</button>
+    </form>
+  </header>
+  <div class="container">
+    <div class="welcome">
+      Welcome, Dr. <strong><!-- doctor name here dynamically --></strong>
+    </div>
+
+    <div class="buttons">
+      <button class="dashboard-btn" onclick="location.href='/my_patients'">My Patients</button>
+      <button class="dashboard-btn" onclick="location.href='/add_patient'">Add a New Patient</button>
+    </div>
+
+    <div class="summary">
+      <div class="summary-card">
+        <h3>Total Patients</h3>
+        <p>12</p>
+      </div>
+      <div class="summary-card">
+        <h3>Sessions This Week</h3>
+        <p>5</p>
+      </div>
+      <div class="summary-card">
+        <h3>Open Cases</h3>
+        <p>3</p>
+      </div>
+    </div>
+
+    <div class="recent-sessions">
+      <h3>Recent Sessions</h3>
+      <div class="session-item">
+        <strong>John Doe</strong> - July 2, 2025<br />
+        Possible diagnosis: Hypertension
+      </div>
+      <div class="session-item">
+        <strong>Jane Smith</strong> - July 1, 2025<br />
+        Possible diagnosis: Inner ear infection
+      </div>
+    </div>
+  </div>
+</body>
+</html>
