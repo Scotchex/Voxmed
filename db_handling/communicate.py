@@ -101,7 +101,7 @@ def get_all_patients():
 def get_doctors_patients(doctor_id):
     patients_cursor = user_collection.find({
         'role' : 'patient',
-        'doctor' : ObjectId(doctor_id)
+        'doctor' : doctor_id
     })
     patients = []
 
@@ -115,6 +115,7 @@ def get_doctors_patients(doctor_id):
         })
 
     return patients
+
 def add_doctor(patient_id, doctor_id):
     result = user_collection.update_one(
         {'_id' : ObjectId(patient_id), 'role' : 'patient'},
@@ -129,12 +130,18 @@ def add_request(patient_id, request):
     )
     return result.modified_count > 0
 
+def add_notes(patient_id, notes):
+    result = user_collection.update_one(
+        {'_id' : ObjectId(patient_id), 'role' : 'patient'},
+        {'$set' : {'notes' : notes}}
+    )
+    return result.modified_count > 0
+
 def get_recent_sessions_for_doctor(doctor_id, limit=5):
     sessions = sessions_collection.find(
         {'doctor_id': ObjectId(doctor_id)}
     ).sort('timestamp', -1).limit(limit)
 
-    # Format and convert ObjectId
     return [
         {
             '_id': str(s['_id']),

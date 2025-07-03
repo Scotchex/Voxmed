@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add New Patient - Voxmed</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #0d1117, #1f2937);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background-color: rgba(13, 17, 23, 0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .back-btn {
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .back-btn:hover {
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+      transform: translateY(-1px);
+    }
+
+    .form-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #161b22;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #c9d1d9;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #8b949e;
+    }
+
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 6px;
+      background-color: #21262d;
+      color: #c9d1d9;
+      font-size: 1rem;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    button[type="submit"]:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+    }
+
+    .flash-message {
+      background-color: #1e3a8a;
+      border-left: 4px solid #3b82f6;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      color: #dbeafe;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <form action="/doctor_landing" method="GET">
+      <button class="back-btn">← Back to Dashboard</button>
+    </form>
+    <div></div>
+  </header>
+
+  <div class="form-container">
+    <h2>Add a New Patient</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-message">
+          {% for msg in messages %}
+            <p>{{ msg }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form action="/add_patient" method="POST">
+      <label for="email">Patient's Email</label>
+      <input type="email" id="email" name="email" placeholder="e.g. patient@example.com" required />
+
+      <label for="request">Requested Information</label>
+      <textarea id="request" name="request" placeholder="e.g. dizziness, O₂ levels, blood pressure" required></textarea>
+
+      <label for="notes">Optional Notes</label>
+      <textarea id="notes" name="notes" placeholder="e.g. high-risk patient, recent surgery, etc."></textarea>
+
+      <button type="submit">Assign Patient</button>
+    </form>
+  </div>
+</body>
+</html>

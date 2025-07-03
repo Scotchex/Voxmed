@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, redirect, session
+from flask import Flask, jsonify, request, render_template, redirect, session, flash
 import requests
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -6,6 +6,7 @@ import os
 from realtime_handling.rtc import get_session
 from db_handling.communicate import *
 from werkzeug.security import generate_password_hash, check_password_hash
+import time
 
 load_dotenv()
 openai_api_key = os.getenv('OPENAI_API_KEY')
@@ -58,8 +59,9 @@ def patient_landing():
 
 @app.route('/doctor_landing')
 def doctor_landing():
+    if 'user_id' not in session:
+        return redirect('/')
     user_id = session['user_id']
-    
     user = get_user_by_id(user_id)
     patients = get_doctors_patients(user_id)
     recent_sessions = get_recent_sessions_for_doctor(user_id)
@@ -85,6 +87,31 @@ def get_session_route():
        return get_session()
     except Exception as e:
         return jsonify({'Error' : str(e)}), 500
+
+@app.route('/add_patient', methods=['GET', 'POST'])
+def add_patient():
+    if 'user_id' not in session or session['role'] != 'doctor':
+        return redirect('/')
+    if request.method == 'POST':
+        email = request.form.get('email')
+        doc_request = request.form.get('request')
+        notes = request.form.get('notes')
+        patient = get_user_by_email(email)
+        doc_id = session['user_id']
+        if patient and patient['role'] == 'patient' and patient['doctor'] != doc_id:
+            add_doctor(patient['_id'], doctor_id=doc_id)
+            add_request(patient['_id'], str(doc_request))
+            add_notes(patient['_id'], str(notes))
+            
+            flash('Successfully added patient!')
+            return redirect('/add_patient')
+        elif patient and patient['doctor'] == doc_id:
+            flash('Patient is already added to account!')
+            return redirect('/add_patient')
+        else:
+            flash('Patient does not exist!')
+            return redirect('/add_patient')
+    return render_template('add_patient.html')
 
 @app.route('/logout', methods=['POST'])
 def logout():
