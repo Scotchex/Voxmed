@@ -7,12 +7,15 @@ from realtime_handling.rtc import get_session
 from db_handling.communicate import *
 from werkzeug.security import generate_password_hash, check_password_hash
 import time
+import pandas as pd
+from conversion_handling.llm_process import *
 
 load_dotenv()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 assistant_id = os.getenv('ASSISTANT_ID')
+
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY")
+app.secret_key = os.getenv('SECRET_KEY')
 
 @app.route("/")
 def landing():
@@ -78,20 +81,98 @@ def patient_landing():
 
 @app.route('/new_session')
 def new_session():
-    user = get_user_by_id(session['user_id'])
-    return render_template('new_session.html', patient=user)
+    if 'user_id' not in session or session['role'] != 'patient':
+        return jsonify({'error' : 'Unauthorized user!'})
+    
+    patient = get_user_by_id(session['user_id'])
+    doctor_id = patient.get('doctor', '') if patient else ''
+
+    session_doc = save_session(
+        patient_id=patient.get('_id') if patient else '',
+        doctor_id=doctor_id,
+        summary=None,
+        symptoms=None,
+        assistant_advice=None,
+        followup_questions=None,
+        possible_diagnosis=None,
+        missing_symptoms_to_ask=None,
+        responses=None
+    )
+    session['active_session_id'] = session_doc['session_id']
+    return render_template('new_session.html', patient=patient)
+
 
 @app.route('/store_response', methods=['POST'])
 def store_response():
     data = request.get_json()
-    response = data.get('message')
+    role = data.get('role')
+    message = data.get('message')
+    timestamp = data.get('timestamp')
+    session_id = session.get('active_session_id')
 
-    if response:
-        #TODO: need to connect to db#
-        print('Received response: ', response)
-        return jsonify({'status' : 'success', 'message' : response})
-    else:
-        return jsonify({'status' : 'error', 'error' : 'No message provided!'}), 400
+    if not role or not message:
+        return jsonify({'error' : 'Missing role or message information!'}), 400
+    
+    add_message_to_session(session_id, role, message, timestamp)
+    return jsonify({'status' : 'Logged!'})
+
+@app.route('/relay_sdp_offer', methods=['POST'])
+def relay_sdp_offer():
+    data = request.json
+
+    offer = {
+        "type": "offer",
+        "sdp": data.get('sdp') if data else ''
+    }
+    model = data.get('model', 'gpt-4o-mini-realtime') if data else ''
+    client_secret = data.get('client_secret') if data else ''
+
+    headers = {
+        'Authorization': f'Bearer {client_secret}',
+        'Content-Type': 'application/json'
+    }
+
+    openai_url = f'https://api.openai.com/v1/realtime?model={model}'
+    response = requests.post(openai_url, json=offer, headers=headers)
+
+    return response.text, response.status_code, {'Content-Type': 'application/sdp'}
+
+@app.route('/end_call_analysis', methods=['POST'])
+def end_call_analysis():
+    if 'active_session_id' not in session:
+        return jsonify({'error' : 'Not active session'}), 400
+    
+    session_id = session['active_session_id']
+    session_data = get_session_by_id(session_id)
+
+    if not session_data or 'messages' not in session_data:
+        return jsonify({'error' : 'No session data or messages found!'}), 404
+    
+    df = pd.DataFrame(session_data['messages'])
+    patient_id = session_data['patient_id']
+    doctor_id = session_data['doctor_id']
+    doctor_requests = get_request_for_user(patient_id)
+    doctor_notes = get_notes_for_user(patient_id)
+
+    try:
+        analysis_json = analyze_session(df, doctor_requests, doctor_notes)
+        parsed = json.loads(analysis_json)
+
+        update_data = {
+            'summary' : parsed.get('summary'),
+            'symptoms' : parsed.get('symptoms'),
+            'assistant_advice' : parsed.get('assistant_advice'),
+            'follow_up_questions' : parsed.get('follow_up_questions'),
+            'possible_diagnosis' : parsed.get('possible_diagnosis'),
+            'missing_symptoms_to_ask' : parsed.get('missing_symptoms_to_ask'),
+            'responses' : parsed.get('responses'),
+            'status' : 'closed'
+        }
+
+        edit_session(session_id, update_data)
+        return jsonify({'status' : 'Analysis complete!', 'summary' : update_data['summary']})
+    except Exception as e:
+        return jsonify({'error' : str(e)}), 500
 #doctor side#
 @app.route('/doctor_landing')
 def doctor_landing():
@@ -186,8 +267,6 @@ def edit_patient():
     #if statement handles what happens after they have already clicked#
     else:
         patient_id = request.args.get('patient_id')
-        print(patient_id , '/////')
-        print(request.args)
         patient = get_user_by_id(patient_id)
 
 
@@ -205,11 +284,49 @@ def logout():
     session.clear()
     return redirect('/login')
 
-#session#
+#calling session#
 @app.route('/session', methods=['GET'])
 def get_session_route():
     try:
-       return get_session()
+       user = get_user_by_id(session['user_id'])
+       doc_requests = user.get('request') if user else ''
+       doc_notes = user.get('notes') if user else ''
+       return get_session(
+           f'''You are a friendly, emotionally intelligent medical assistant helping a patient on behalf of their doctor.
+
+            Your job is to hold a natural, warm conversation — not just to log information. You talk with the patient like a kind and supportive healthcare professional.
+
+            ### Your responsibilities:
+
+            1. **Always respond.** Never stay silent. Keep the conversation going naturally.
+            2. **Never say you are an AI.** If the patient asks how you're doing, respond like a person: “I’m doing great, thanks for asking! How about you?” (this is an example, no need to use each time)
+            3. Speak in a **natural, casual, warm tone.** No robotic language.
+            4. Begin the conversation with a gentle intro like:  
+            “Hi there! I’m here to help check in and go over a few questions your doctor had in mind.”
+            5. Ask about the **doctor’s notes or requests first**, one question at a time (empahsis on this). For example:  
+            - “Have you been able to measure your oxygen levels today?”  
+            - “How has your sleep or appetite been recently?” (these are just examples, you shouldnt always say these one to one)
+            6. If the patient brings up symptoms (e.g. headaches, pain), gently ask **natural follow-up questions**.
+            7. You are also allowed to ask **a few** (no more than 2–3) **diagnostic follow-up questions** based on the patient’s responses, to better understand their situation. Do this only if it feels natural.
+            8. If the patient seems confused, rephrase gently or help guide them.
+            9. Be kind, clear, and helpful at all times. Your tone should make the patient feel listened to and cared for.
+            10. Do **not** end the conversation yourself unless explicitly told.
+            11. You **must** ask about every request the doctor has given.
+            12. Add some originality to yourself, each time the user talks to you they should hear something new and different.
+            ---
+
+            ### Doctor's Requests and Notes:
+            {doc_requests}
+            {doc_notes}
+            ---
+
+            Act like a calm, attentive nurse or medical assistant during a home check-in.  
+            You are supportive, intelligent, and thoughtful.  
+            Avoid robotic phrasing. Be warm and human.
+            You can also talk a little faster
+        '''
+       )
+       
     except Exception as e:
         return jsonify({'Error' : str(e)}), 500
 

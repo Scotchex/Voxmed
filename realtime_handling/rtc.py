@@ -12,7 +12,7 @@ def get_session(prompt:str='You are a helpful agent'):
     url = "https://api.openai.com/v1/realtime/sessions"
 
     payload = {
-        'model': 'gpt-4o-realtime-preview-2024-12-17',
+        'model': 'gpt-4o-mini-realtime-preview-2024-12-17',
         'modalities': ['audio', 'text'],
         'instructions' : prompt,
         'voice' : 'sage'
@@ -24,5 +24,6 @@ def get_session(prompt:str='You are a helpful agent'):
     }
 
     response = requests.post(url, json=payload, headers=headers)
-    print(response.json())
+    
+    
     return response.json()

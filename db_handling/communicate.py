@@ -98,6 +98,20 @@ def add_notes(patient_id, notes):
     )
     return result.modified_count > 0
 
+def get_request_for_user(user_id):
+    user = get_user_by_id(user_id)
+    if user:
+        return user.get('request', '')
+    else:
+        return ''
+    
+def get_notes_for_user(user_id):
+    user = get_user_by_id(user_id)
+    if user:
+        return user.get('notes', '')
+    else:
+        return ''
+
 def get_recent_sessions_for_doctor(doctor_id, limit=5):
     sessions = sessions_collection.find(
         {'doctor_id': ObjectId(doctor_id)}
@@ -130,15 +144,24 @@ def edit_patient_func(user_id, doctor_id, request_text, notes):
     )
     return result
 #sessions functions#
-def save_session(patient_id, doctor_id, transcript, summary, possible_diagnosis=None, status='open'):
+def save_session(patient_id, doctor_id, summary,
+                 symptoms, assistant_advice, followup_questions,
+                    missing_symptoms_to_ask,
+                    responses, possible_diagnosis=None, status='open'):
+    
     session_data = {
         'patient_id' : ObjectId(patient_id),
         'doctor_id' : ObjectId(doctor_id),
-        'transcript' : transcript,
-        'diagnosis' : possible_diagnosis,
-        'timestamp' : datetime.now(),
+        'summary' : summary,
+        'symptoms' : symptoms,
+        'assistant_advice' : assistant_advice,
+        'follow_up_questions' : followup_questions,
+        'possible_diagnosis' : possible_diagnosis,
+        'missing_symptoms_to_ask' : missing_symptoms_to_ask,
+        'responses' : responses,
         'status' : status,
-        'summary' : summary
+        'messages' : [],
+        'timestamp' : datetime.now()
     }
 
     result = sessions_collection.insert_one(session_data)
@@ -164,6 +187,46 @@ def count_open_cases_for_doctor(doctor_id):
     })
 
 def get_sessions_for_user(user_id):
-    sessions = sessions_collection.find({'user_id' : ObjectId(user_id)})
-    return [{**s, '_id' : str(s['_id'])} for s in sessions]
+    sessions = sessions_collection.find({'patient_id': ObjectId(user_id)})
+    return [{**s, '_id': str(s['_id'])} for s in sessions]
 
+def get_session_by_id(session_id):
+    session = sessions_collection.find_one({'_id': ObjectId(session_id)})
+    if session:
+        session['_id'] = str(session['_id'])
+    return session
+
+def update_session_status(session_id, new_status):
+    result = sessions_collection.update_one(
+        {'_id': ObjectId(session_id)},
+        {'$set': {'status': new_status}}
+    )
+    return result.modified_count > 0
+
+def get_patient_sessions_for_doctor(doctor_id, patient_id):
+    sessions = sessions_collection.find({
+        'doctor_id': ObjectId(doctor_id),
+        'patient_id': ObjectId(patient_id)
+    }).sort('timestamp', -1)
+
+    return [{**s, '_id': str(s['_id'])} for s in sessions]
+
+def add_message_to_session(session_id, role, message, timestamp):
+    sessions_collection.update_one(
+        {'_id' : ObjectId(session_id)},
+        {'$push' : {
+            'messages' : {
+                'role' : role,
+                'message' : message,
+                'timestamp' : timestamp
+            }
+        }}
+    )
+
+def edit_session(session_id, data):
+    response = sessions_collection.update_one(
+        {'_id' : ObjectId(session_id)},
+        {'$set' : data}
+    )
+
+    return response
