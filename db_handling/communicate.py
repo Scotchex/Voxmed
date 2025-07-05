@@ -4,6 +4,7 @@ from bson.objectid import ObjectId
 from datetime import datetime
 import os
 from pymongo.results import UpdateResult
+from datetime import datetime, timedelta
 
 load_dotenv()
 uri = os.getenv('MONGODB_URI')
@@ -44,47 +45,6 @@ def get_user_by_id(user_id):
         return user
     except:
         return None
-
-
-#sessions functions#
-def save_session(patient_id, doctor_id, transcript, possible_diagnosis=None, status='open'):
-    session_data = {
-        'patient_id' : ObjectId(patient_id),
-        'doctor_id' : ObjectId(doctor_id),
-        'transcript' : transcript,
-        'diagnosis' : possible_diagnosis,
-        'timestamp' : datetime.now(),
-        'status' : status
-    }
-
-    result = sessions_collection.insert_one(session_data)
-    return {'success' : True, 'session_id' : str(result.inserted_id)}
-
-def get_sessions_for_doctor(doctor_id):
-    sessions = sessions_collection.find({'doctor_id' : ObjectId(doctor_id)})
-    return [{**s, '_id' : str(s['_id'])} for s in sessions]
-
-from datetime import datetime, timedelta
-
-def get_sessions_this_week_for_doctor(doctor_id):
-    one_week_ago = datetime.now() - timedelta(days=7)
-    sessions = sessions_collection.find({
-        'doctor_id': ObjectId(doctor_id),
-        'timestamp': {'$gte': one_week_ago}
-    })
-
-    return [{**s, '_id': str(s['_id'])} for s in sessions]
-
-def count_open_cases_for_doctor(doctor_id):
-    return sessions_collection.count_documents({
-        'doctor_id': ObjectId(doctor_id),
-        'status': 'open'
-    })
-
-
-def get_sessions_for_user(user_id):
-    sessions = sessions_collection.find({'user_id' : ObjectId(user_id)})
-    return [{**s, '_id' : str(s['_id'])} for s in sessions]
 
 def get_all_patients():
     patients_cursor = user_collection.find({'role' : 'patient'})
@@ -162,3 +122,48 @@ def remove_doctor(user_id, doctor_id) -> UpdateResult:
          {'$unset' : {'doctor' : ""}}
     )
     return result
+
+def edit_patient_func(user_id, doctor_id, request_text, notes):
+    result = user_collection.update_one(
+        {'_id' : ObjectId(user_id), 'doctor' : doctor_id},
+        {'$set' : {'request' : request_text, 'notes' : notes}}
+    )
+    return result
+#sessions functions#
+def save_session(patient_id, doctor_id, transcript, summary, possible_diagnosis=None, status='open'):
+    session_data = {
+        'patient_id' : ObjectId(patient_id),
+        'doctor_id' : ObjectId(doctor_id),
+        'transcript' : transcript,
+        'diagnosis' : possible_diagnosis,
+        'timestamp' : datetime.now(),
+        'status' : status,
+        'summary' : summary
+    }
+
+    result = sessions_collection.insert_one(session_data)
+    return {'success' : True, 'session_id' : str(result.inserted_id)}
+
+def get_sessions_for_doctor(doctor_id):
+    sessions = sessions_collection.find({'doctor_id' : ObjectId(doctor_id)})
+    return [{**s, '_id' : str(s['_id'])} for s in sessions]
+
+def get_sessions_this_week_for_doctor(doctor_id):
+    one_week_ago = datetime.now() - timedelta(days=7)
+    sessions = sessions_collection.find({
+        'doctor_id': ObjectId(doctor_id),
+        'timestamp': {'$gte': one_week_ago}
+    })
+
+    return [{**s, '_id': str(s['_id'])} for s in sessions]
+
+def count_open_cases_for_doctor(doctor_id):
+    return sessions_collection.count_documents({
+        'doctor_id': ObjectId(doctor_id),
+        'status': 'open'
+    })
+
+def get_sessions_for_user(user_id):
+    sessions = sessions_collection.find({'user_id' : ObjectId(user_id)})
+    return [{**s, '_id' : str(s['_id'])} for s in sessions]
+

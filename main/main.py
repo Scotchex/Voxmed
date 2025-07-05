@@ -18,10 +18,6 @@ app.secret_key = os.getenv("SECRET_KEY")
 def landing():
     return render_template("landing.html")
 
-@app.route('/call')
-def index():
-    return render_template('call.html')
-
 @app.route('/signup', methods = ['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -48,15 +44,55 @@ def login():
             session['role'] = user['role']
             if session['role'] == 'doctor':
                 return redirect('/doctor_landing')
+            if session['role'] == 'patient':
+                return redirect('/patient_landing')
         else:
             return render_template('login.html', error = 'Invalid email or password')
 
     return render_template('login.html')
 
+#patient side#
 @app.route('/patient_landing')
 def patient_landing():
-    return 'a'
+    if 'user_id' not in session or session['role'] != 'patient':
+        return redirect('/')
 
+    user = get_user_by_id(session['user_id'])
+    if user:
+        doctor = get_user_by_id(user.get('doctor'))
+        r_sessions = get_sessions_for_user(user['_id'])
+        s_sessions = [
+            {
+                'summary' : s.get('summary', ''),
+                'timestamp' : s['timestamp'].strftime('%B %d, %Y')
+            }
+            for s in r_sessions
+        ]
+        return render_template('patient_landing.html',
+                            patient = user,
+                            doctor=doctor,
+                            total_sessions=len(s_sessions),
+                            sessions = s_sessions)             
+    else:
+        return 'No user found'
+
+@app.route('/new_session')
+def new_session():
+    user = get_user_by_id(session['user_id'])
+    return render_template('new_session.html', patient=user)
+
+@app.route('/store_response', methods=['POST'])
+def store_response():
+    data = request.get_json()
+    response = data.get('message')
+
+    if response:
+        #TODO: need to connect to db#
+        print('Received response: ', response)
+        return jsonify({'status' : 'success', 'message' : response})
+    else:
+        return jsonify({'status' : 'error', 'error' : 'No message provided!'}), 400
+#doctor side#
 @app.route('/doctor_landing')
 def doctor_landing():
     if 'user_id' not in session:
@@ -79,14 +115,6 @@ def doctor_landing():
                                recent_sessions = recent_sessions)
     else:
         return redirect('/login')
-
-
-@app.route('/session', methods=['GET'])
-def get_session_route():
-    try:
-       return get_session()
-    except Exception as e:
-        return jsonify({'Error' : str(e)}), 500
 
 @app.route('/add_patient', methods=['GET', 'POST'])
 def add_patient():
@@ -133,12 +161,64 @@ def remove_patient():
         flash('Patient removed!')
         return redirect('/my_patients')
     else:
-        flash('Patient could not be removed due to unauthorization errors!')
+        flash('Patient could not be removed due to authorization errors!')
         return redirect('/my_patients')
 
+@app.route('/edit_patient', methods=['GET', 'POST'])
+def edit_patient():
+    if 'user_id' not in session or session['role'] != 'doctor':
+        return redirect('/')
+    
+    if request.method == 'POST':
+        patient_id = request.form['patient_id']
+        request_text = request.form['request']
+        notes = request.form['notes']
+
+        result = edit_patient_func(patient_id, session['user_id'], request_text, notes)
+        
+        if result.modified_count > 0:
+            flash('Patient information updated successfully!')
+        else:
+            flash('Update failed!')
+        return redirect('/my_patients')
+    #note to self to avoid confusion later:#
+    #this is just when the user only clicks on edit patient#
+    #if statement handles what happens after they have already clicked#
+    else:
+        patient_id = request.args.get('patient_id')
+        print(patient_id , '/////')
+        print(request.args)
+        patient = get_user_by_id(patient_id)
+
+
+        if not patient:
+            flash('Patient not found!')
+            return redirect('/my_patients')
+
+        patient['_id'] = str(patient['_id'])
+        return render_template('edit_patient.html', patient = patient)
+
+
+#logout#
 @app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return redirect('/login')
+
+#session#
+@app.route('/session', methods=['GET'])
+def get_session_route():
+    try:
+       return get_session()
+    except Exception as e:
+        return jsonify({'Error' : str(e)}), 500
+
+@app.route('/call')
+def index():
+    return render_template('call.html')
+@app.route('/test')
+def test():
+    return render_template('test.html')
 if __name__ == '__main__':
     app.run('0.0.0.0', 8080)
+

@@ -118,6 +118,15 @@
     .view-btn:hover {
       background-color: #2563eb;
     }
+
+    .edit-btn {
+      background-color: #f59e0b;
+      color: white;
+    }
+
+    .edit-btn:hover {
+      background-color: #d97706;
+    }
   </style>
 </head>
 <body>
@@ -154,11 +163,15 @@
           <form method="POST" action="/remove_patient" onsubmit="return confirm('Are you sure you want to remove this patient?');">
             <input type="hidden" name="patient_id" value="{{ patient._id }}" />
             <button type="submit" class="action-btn remove-btn">Remove</button>
-          </form>
-          <form method="GET" action="/patient_data">
+            </form>
+          <form method="GET" action="/edit_patient">
+            <input type="hidden" name="patient_id" value="{{ patient._id }}" />
+            <button type="submit" class="action-btn edit-btn">Edit</button>
+            </form>
+            <form method="GET" action="/patient_data">
             <input type="hidden" name="patient_id" value="{{ patient._id }}" />
             <button type="submit" class="action-btn view-btn">View Data</button>
-          </form>
+        </form>
         </div>
       </div>
     {% endfor %}

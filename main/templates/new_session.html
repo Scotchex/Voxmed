@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>New Session - Voxmed</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0d1117;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background-color: #161b22;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #c9d1d9;
+    }
+    .back-btn {
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .main-content, #ringBox {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .welcome-message {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+      color: #c9d1d9;
+    }
+    #callButton {
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #3b82f680;
+    }
+    #callButton:hover {
+      background-color: #2563eb;
+    }
+    .voice-blob {
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, #3b82f6, #1f6feb);
+    border-radius: 45% 55% 60% 40% / 55% 50% 50% 45%; /* Match initial frame */
+    filter: blur(10px);
+    transition: transform 0.08s ease, filter 0.1s ease;
+    animation: blob-morph 5s infinite ease-in-out;
+  }
+    @keyframes blob-morph {
+      0% { border-radius: 45% 55% 60% 40% / 55% 50% 50% 45%; }
+      50% { border-radius: 55% 45% 40% 60% / 45% 55% 60% 50%; }
+      100% { border-radius: 45% 55% 60% 40% / 55% 50% 50% 45%; }
+    }
+    .call-status, .loader {
+      margin-top: 40px;
+      font-size: 1.1rem;
+      color: #9ca3af;
+    }
+    .loader {
+      display: none;
+      color: #60a5fa;
+      font-weight: bold;
+    }
+    #endCallBtn {
+      margin-top: 25px;
+      padding: 10px 20px;
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      display: none;
+    }
+    #endCallBtn:hover {
+      background-color: #dc2626;
+    }
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const talkBtn = document.getElementById("callButton");
+      const ringBox = document.getElementById("ringBox");
+      const mainContent = document.querySelector(".main-content");
+
+      talkBtn.addEventListener("click", () => {
+        mainContent.style.display = "none";
+        ringBox.style.display = "flex";
+      });
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <form action="/patient_landing" method="GET">
+      <button class="back-btn">&larr; Back to Dashboard</button>
+    </form>
+    <h1>New Session - Voxmed</h1>
+  </header>
+
+  <div class="main-content">
+    <div class="welcome-message">Welcome, <strong>{{ patient.name }}</strong></div>
+    <button id="callButton">Talk</button>
+  </div>
+
+  <div id="ringBox" style="display: none;">
+    <div class="voice-blob" id="voiceBlob"></div>
+    <div class="call-status">Initializing...</div>
+    <div class="loader">Sending message...</div>
+    <button id="endCallBtn">Stop Talking</button>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/voice_visualizer.js') }}"></script>
+</body>
+</html>

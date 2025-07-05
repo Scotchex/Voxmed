@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Dashboard - Voxmed</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #0d1117, #1f2937);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background-color: rgba(13, 17, 23, 0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #c9d1d9;
+    }
+
+    .logout-btn {
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .logout-btn:hover {
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+      transform: translateY(-1px);
+    }
+
+    .container {
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .welcome {
+      font-size: 1.25rem;
+      color: #c9d1d9;
+    }
+
+    .summary {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .summary-card {
+      flex: 1;
+      background-color: #21262d;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      min-width: 250px;
+    }
+
+    .summary-card h3 {
+      margin-top: 0;
+      color: #c9d1d9;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .dashboard-btn {
+      flex: 1;
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      min-width: 250px;
+    }
+
+    .dashboard-btn:hover {
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+      transform: scale(1.02);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Voxmed - Patient Dashboard</h1>
+    <form action="/logout" method="POST">
+      <button class="logout-btn">Logout</button>
+    </form>
+  </header>
+
+  <div class="container">
+    <div class="welcome">
+      Welcome, <strong>{{ patient.name }}</strong>
+    </div>
+
+    <div class="summary">
+      <div class="summary-card">
+        <h3>Assigned Doctor</h3>
+        <p>{{ doctor.name if doctor else 'No doctor assigned' }}</p>
+        <p style="color: #8b949e">{{ doctor.email if doctor else '' }}</p>
+      </div>
+
+      <div class="summary-card">
+        <h3>Total Sessions</h3>
+        <p>{{ total_sessions }}</p>
+      </div>
+
+      <div class="summary-card">
+        <h3>Latest Discussion Points</h3>
+        <p>
+          {% if sessions and sessions[0].summary %}
+            {{ sessions[0].summary }}
+          {% else %}
+            Not available
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="dashboard-btn" onclick="location.href='/new_session'">Start New Session</button>
+      <button class="dashboard-btn" onclick="location.href='/session_history'">View Session History</button>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,1 +1,3 @@
 .env
+main/static/templates/test.html
+main/static/js/voice_visualization.js
