@@ -78,5 +78,5 @@ python -m src.main
 ## 📫 Contact
 
 If you’re interested in collaborating, contributing, or deploying VoxMed:
-- GitHub: @Scotchex
-- [LinkedIn: ](https://www.linkedin.com/in/arda-serhatli/)
+- Email : ardas@vt.edu
+- [LinkedIn](https://www.linkedin.com/in/arda-serhatli/)
