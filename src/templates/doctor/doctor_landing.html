@@ -102,7 +102,7 @@
     }
 
     .recent-sessions {
-      background-color: #161b22;
+      background-color: #1e242c;
       border-radius: 10px;
       padding: 20px;
     }
@@ -113,9 +113,70 @@
     }
 
     .session-item {
-      margin-bottom: 12px;
-      border-bottom: 1px solid #30363d;
-      padding-bottom: 10px;
+      margin-bottom: 16px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      background-color: #1e252d;
+      border: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .session-item:hover {
+      background-color: #1c222a;
+    }
+
+    .session-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+      padding-right: 20px;
+      overflow-wrap: break-word;
+    }
+
+    .session-info strong {
+      font-size: 1.05rem;
+    }
+
+    .diagnosis {
+      color: #8b949e;
+      font-size: 0.95rem;
+      margin: 3px 0;
+      word-wrap: break-word;
+    }
+
+    .date {
+      color: #6e7681;
+      font-size: 0.9rem;
+    }
+
+    .session-action {
+      display: flex;
+      align-items: center;
+    }
+
+    .session-action form {
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    .view-btn {
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .view-btn:hover {
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+      transform: translateY(-1px);
     }
   </style>
 </head>
@@ -126,6 +187,7 @@
       <button class="logout-btn">Logout</button>
     </form>
   </header>
+
   <div class="container">
     <div class="welcome">
       Welcome, Dr. <strong>{{ doctor_name }}</strong>
@@ -152,15 +214,24 @@
     </div>
 
     <div class="recent-sessions">
-        <h3>Recent Sessions</h3>
+      <h3>Recent Sessions</h3>
+
+      {% if recent_sessions %}
         {% for session in recent_sessions %}
         <div class="session-item">
-            <strong>{{ session.patient_id }}</strong>
-            Possible Diagnosis : {{ session.diagnosis}}
+          <div class="session-info">
+            <strong>{{ session.patient_name }}</strong>
+            <span class="diagnosis">Potential Diagnosis: {{ session.diagnosis or 'N/A' }}</span>
+            <span class="date">
+              {{ session.timestamp if session.timestamp else 'Unknown date' }}
+            </span>
+          </div>
         </div>
-        {% else %}
-            <p>No recent sessions found</p>
         {% endfor %}
+      {% else %}
+        <p>No recent sessions found.</p>
+      {% endif %}
     </div>
+  </div>
 </body>
 </html>

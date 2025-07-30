@@ -46,9 +46,9 @@ def login():
             session['user_id'] = user['_id']
             session['role'] = user['role']
             if session['role'] == 'doctor':
-                return redirect('/doctor_landing')
+                return redirect('doctor_landing')
             if session['role'] == 'patient':
-                return redirect('/patient_landing')
+                return redirect('patient_landing')
         else:
             return render_template('login.html', error = 'Invalid email or password')
 
@@ -71,7 +71,7 @@ def patient_landing():
             }
             for s in r_sessions
         ]
-        return render_template('patient_landing.html',
+        return render_template('patient/patient_landing.html',
                             patient = user,
                             doctor=doctor,
                             total_sessions=len(s_sessions),
@@ -99,7 +99,7 @@ def new_session():
         responses=None
     )
     session['active_session_id'] = session_doc['session_id']
-    return render_template('new_session.html', patient=patient)
+    return render_template('patient/new_session.html', patient=patient)
 
 
 @app.route('/store_response', methods=['POST'])
@@ -173,6 +173,26 @@ def end_call_analysis():
         return jsonify({'status' : 'Analysis complete!', 'summary' : update_data['summary']})
     except Exception as e:
         return jsonify({'error' : str(e)}), 500
+
+@app.route('/patient/session_history')
+def patient_session_history():
+    if 'user_id' not in session or session['role'] != 'patient':
+        return redirect('/login')
+
+    user_id = session['user_id']
+    sessions = get_sessions_for_user(user_id)
+
+    data = []
+    for s in sessions:
+        data.append({
+            'session_id' : str(s['_id']),
+            'timestamp' : s['timestamp'].strftime('%B %d, %Y, %H:%M'),
+            'summary' : s.get('summary', 'No summary available')
+        })
+    
+    return render_template('patient/session_history.html', sessions=data)
+
+
 #doctor side#
 @app.route('/doctor_landing')
 def doctor_landing():
@@ -188,7 +208,7 @@ def doctor_landing():
     
     if user:
         name = user['name']
-        return render_template('doctor_landing.html', 
+        return render_template('doctor/doctor_landing.html', 
                                doctor_name = name, 
                                total_patients = total_patients,
                                sessions_this_week = weekly_sessions,
@@ -220,12 +240,12 @@ def add_patient():
         else:
             flash('Patient does not exist!')
             return redirect('/add_patient')
-    return render_template('add_patient.html')
+    return render_template('doctor/add_patient.html')
 
 @app.route('/my_patients', methods=['GET', 'POST'])
 def my_patients():
     doc_id = session['user_id']
-    return render_template('my_patients.html', patients=get_doctors_patients(doc_id))
+    return render_template('doctor/my_patients.html', patients=get_doctors_patients(doc_id))
 
 @app.route('/remove_patient', methods=['POST'])
 def remove_patient():
@@ -275,9 +295,50 @@ def edit_patient():
             return redirect('/my_patients')
 
         patient['_id'] = str(patient['_id'])
-        return render_template('edit_patient.html', patient = patient)
+        return render_template('doctor/edit_patient.html', patient = patient)
 
+@app.route('/patient_sessions', methods=['GET'])
+def get_patient_sessions():
+    if 'user_id' not in session or session['role'] != 'doctor':
+        return redirect('/login')
+    
+    doctor_id = session['user_id']
+    patient_id = request.args.get('patient_id')
+    filter_date = request.args.get('filter_date')
 
+    patient = get_user_by_id(patient_id)
+
+    if not patient_id:
+        flash('Missing patient ID!')
+        return redirect('/my_patients')
+    
+    sessions = get_patient_sessions_for_doctor(doctor_id, patient_id)
+
+    f_sessions = []
+
+    if filter_date:
+        try:
+            date_obj = datetime.strptime(filter_date, '%Y-%m-%d').date()
+            for s in sessions:
+                if s['timestamp'].date() == date_obj:
+                    f_sessions.append(s)
+        except Exception as e:
+            flash('Invalid date format!')
+
+    for s in sessions:
+        f_sessions.append({
+            'summary' : s.get('summary', 'No summary available'),
+            'diagnosis' : s.get('possible_diagnosis', 'N/A'),
+            'timestamp' : s['timestamp'].strftime('%B %d, %Y'),
+            'symptoms' : s.get('symptoms', 'No symptoms found') or [],
+            'advice' : s.get('assistant_advice', 'No advice given'),
+            'follow_up_questions' : s.get('follow_up_questions') or [],
+            'missing_symptoms_to_ask' : s.get('missing_symptoms_to_ask') or [],
+            'responses' : s.get('responses') or {}
+        })
+    
+    return render_template('doctor/patient_sessions.html', 
+                           patient = patient, sessions=f_sessions)
 #logout#
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -332,10 +393,8 @@ def get_session_route():
 
 @app.route('/call')
 def index():
-    return render_template('call.html')
-@app.route('/test')
-def test():
-    return render_template('test.html')
+    return render_template('patient/call.html')
+
 if __name__ == '__main__':
     app.run('0.0.0.0', 8080)
 

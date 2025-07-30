@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Session History - Voxmed</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 20px 40px;
+      background-color: #161b22;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .back-btn {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background-color: #60a5fa;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .session-card {
+      background-color: #21262d;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .session-card h2 {
+      margin-top: 0;
+      color: #58a6ff;
+      font-size: 1.1rem;
+    }
+
+    .view-btn {
+      margin-top: 10px;
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .view-btn:hover {
+      transform: scale(1.03);
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Session History</h1>
+    <button class="back-btn" onclick="window.location.href='/patient_landing'">← Back</button>
+  </header>
+
+  <div class="container">
+    {% if sessions %}
+      {% for session in sessions %}
+        <div class="session-card">
+          <h2>{{ session.timestamp }}</h2>
+          <p><strong>Summary:</strong> {{ session.summary or "Not available" }}</p>
+          <!-- <button class="view-btn" onclick="location.href='/patient/session/{{ session._id }}'">View Information</button> -->
+           <!-- for later -->
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No sessions available yet.</p>
+    {% endif %}
+  </div>
+
+</body>
+</html>

@@ -121,8 +121,10 @@ def get_recent_sessions_for_doctor(doctor_id, limit=5):
         {
             '_id': str(s['_id']),
             'patient_id': str(s['patient_id']),
+            'patient_name' : (get_user_by_id(str(s['patient_id'])) or {}).get('name', ''),
+            'patient_email' : (get_user_by_id(str(s['patient_id'])) or {}).get('email', ''),
             'transcript': s.get('transcript', ''),
-            'diagnosis': s.get('diagnosis', 'N/A'),
+            'diagnosis': s.get('possible_diagnosis', 'N/A'),
             'timestamp': s['timestamp'].strftime('%B %d, %Y'),
         }
         for s in sessions

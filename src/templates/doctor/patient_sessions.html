@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Patient Sessions - Voxmed</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #0d1117, #1f2937);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background-color: rgba(13, 17, 23, 0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .back-btn {
+      background: linear-gradient(to right, #3b82f6, #1f6feb);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .back-btn:hover {
+      background: linear-gradient(to right, #60a5fa, #3b82f6);
+      transform: translateY(-1px);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #161b22;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #c9d1d9;
+    }
+
+    .session-card {
+      background-color: #21262d;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .session-card h3 {
+      margin-top: 0;
+      color: #c9d1d9;
+    }
+
+    .session-card p {
+      margin: 6px 0;
+      color: #d1d5db;
+    }
+
+    .session-card ul {
+      padding-left: 20px;
+      margin: 6px 0 12px;
+    }
+
+    .no-sessions {
+      text-align: center;
+      color: #9ca3af;
+      font-style: italic;
+    }
+    
+    .responses-list > li {
+        margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <form action="/my_patients" method="GET">
+      <button class="back-btn">← Back to My Patients</button>
+    </form>
+    <div></div>
+  </header>
+
+<form method="GET" action="/patient_sessions" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+    <input type="hidden" name="patient_id" value="{{ patient._id }}" />
+    <label for="filter-date"><strong>Filter by Date:</strong></label>
+    <input type="date" id="filter-date" name="filter_date" value="{{ request.args.get('filter_date', '') }}" style="padding: 6px; border-radius: 6px; border: none; font-size: 1rem;" />
+    <button type="submit" style="padding: 8px 14px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+        Filter
+    </button>
+</form>
+
+  <div class="container">
+    <h2>Sessions for {{ patient.name }}</h2>
+
+    {% if sessions %}
+      {% for session in sessions %}
+        <div class="session-card">
+          <h3>{{ session.timestamp }}</h3>
+          <p><strong>Summary:</strong> {{ session.summary or "No summary provided" }}</p>
+          <p><strong>Possible Diagnosis:</strong> {{ session.diagnosis or "N/A" }}</p>
+          <p><strong>Advice Given by Assistant:</strong> {{ session.advice or "No advice given"}}</p>
+
+          <p><strong>Symptoms:</strong></p>
+          <ul>
+            {% for item in session.symptoms %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+
+          <p><strong>Follow-up Questions:</strong></p>
+          <ul>
+            {% for question in session.follow_up_questions %}
+              <li>{{ question }}</li>
+            {% endfor %}
+          </ul>
+
+          <p><strong>Missing symptoms to ask:</strong></p>
+          <ul>
+            {% for symptom in session.missing_symptoms_to_ask %}
+              <li>{{ symptom }}</li>
+            {% endfor %}
+          </ul>
+
+          {% if session.responses %}
+            <p><strong>Patient Responses:</strong></p>
+            <ul class="responses-list">
+              {% for r in session.responses %}
+                <li>
+                  <strong>Question:</strong> {{ r.request }}<br>
+                  <strong>Response:</strong> {{ r.patient_response }}<br>
+                  {% if r.value is mapping %}
+                    <strong>Values:</strong>
+                    <ul>
+                      {% for key, val in r.value.items() %}
+                        <li>{{ key }}: {{ val }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <strong>Value:</strong> {{ r.value }}
+                  {% endif %}
+                 
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No responses recorded</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="no-sessions">No sessions found for this patient.</p>
+    {% endif %}
+  </div>
+</body>
+</html>
